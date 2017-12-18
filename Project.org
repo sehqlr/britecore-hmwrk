@@ -1,0 +1,55 @@
+#+TITLE: BriteCore Project: Feature Request Web Application
+
+This is my attempt at implementing an engineering project as part of a hiring
+process. I will state any assumptions and opinions that I have as I am
+developing this web app, but I'm open for answering questions on any part of
+this that I didn't explain. This =org-mode= document will serve as my notes.
+
+* Tech Stack requirements
+  The first thing that jumped out at me in the project's description is the
+  preferred tech stack.
+
+  - OS :: Ubuntu
+  - Server Side Scripting :: Python 2.7+ or 3.5+
+  - Server Framework :: Flask or SimpleHTTPServer
+  - ORM :: SQLAlchemy
+  - JavaScript :: KnockoutJS
+
+
+** =Dockerfile=
+   Since the preferred OS is Ubuntu, let's start with a Dockerfile based on that
+   OS. I'll add a virtualenv-type solution if I have time.
+   #+NAME: Dockerfile preamble
+   #+BEGIN_SRC dockerfile 
+     FROM ubuntu
+
+     RUN apt-get update -y && \
+         apt-get install -y python3 python3-pip npm
+   #+END_SRC
+
+   #+BEGIN_SRC dockerfile :noweb yes :tangle Dockerfile
+     <<Dockerfile preamble>>
+
+     <<install python>>
+   #+END_SRC
+
+** =requirements.txt=
+   Next, we need to install our server-side dependencies with a pip requirements file.
+   #+BEGIN_SRC python :tangle ./requirements.txt
+     sqlalchemy
+     flask
+   #+END_SRC
+   
+   #+NAME: install python
+   #+BEGIN_SRC dockerfile
+     COPY requirements.txt .
+     RUN pip3 install -r requirements.txt
+   #+END_SRC
+
+** KnockoutJS CDN link
+   I'm going to use one of the CDN copies of KO like they suggest on their
+   website.
+   #+NAME: KO CDN
+   #+BEGIN_SRC html 
+     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.2/knockout-min.js"></script>
+   #+END_SRC
