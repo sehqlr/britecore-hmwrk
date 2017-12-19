@@ -5,51 +5,109 @@ process. I will state any assumptions and opinions that I have as I am
 developing this web app, but I'm open for answering questions on any part of
 this that I didn't explain. This =org-mode= document will serve as my notes.
 
-* Tech Stack requirements
-  The first thing that jumped out at me in the project's description is the
-  preferred tech stack.
+* Sketching out the system
+   The first thing that jumped out at me in the project's description is the
+   preferred tech stack.
 
-  - OS :: Ubuntu
-  - Server Side Scripting :: Python 2.7+ or 3.5+
-  - Server Framework :: Flask or SimpleHTTPServer
-  - ORM :: SQLAlchemy
-  - JavaScript :: KnockoutJS
+   - OS :: Ubuntu
+   - Server Side Scripting :: Python 2.7+ or 3.5+
+   - Server Framework :: Flask or SimpleHTTPServer
+   - ORM :: SQLAlchemy
+   - JavaScript :: KnockoutJS
 
+* What hosting service to use?
+  The majority of my professional experience has been working with AWS, and most
+  of my hobbist projects have been hosted on DigitalOcean. I started sketching
+  out a solution based around Docker because I know that pulling an image down
+  is a really fast way of testing something locally. However, I realized that
+  this could be an excuse to learn how to use Heroku. I know that they were the
+  tool to use back in the day, so I've always wanted to use them. 
 
-** =Dockerfile=
-   Since the preferred OS is Ubuntu, let's start with a Dockerfile based on that
-   OS. I'll add a virtualenv-type solution if I have time.
-   #+NAME: Dockerfile preamble
-   #+BEGIN_SRC dockerfile 
-     FROM ubuntu
+** Looking at the Python tutorial on Heroku
+   Since I haven't used this service before, I decided I should walk myself
+   through their [[https://devcenter.heroku.com/articles/getting-started-with-python#introduction][Getting Started docs]]. One thing that I will say, I learned
+   about =pipenv=. I've always used Docker to perform the isolation, so it's new
+   to me.
+* The Comment Box
+  I'm going to call this app "The Comment Box." I'm going to attempt to draw
+  inspiration from those comment boxes that no one uses at fast food
+  restaurants. I'm sure that I will miss the mark, but that's what I'm going for.
+** Dependencies
+   I'm going to use Flask for the backend framework, and I'll need to install
+   SQLAlchemy as well. Let's run a couple of =pipenv= commands. First, I'm going
+   to run the =uninstall --all= command just to make sure that I have a fresh
+   system while I iterate on the code.
 
-     RUN apt-get update -y && \
-         apt-get install -y python3 python3-pip npm
+   #+BEGIN_SRC sh :results output
+     pipenv uninstall --all
+     pipenv install flask sqlalchemy
    #+END_SRC
 
-   #+BEGIN_SRC dockerfile :noweb yes :tangle Dockerfile
-     <<Dockerfile preamble>>
+   #+RESULTS:
+   #+begin_example
+   Un-installing all packages from virtualenv…
+   Found 7 installed package(s), purging…
+   Uninstalling click-6.7:
+     Successfully uninstalled click-6.7
+   Uninstalling Flask-0.12.2:
+     Successfully uninstalled Flask-0.12.2
+   Uninstalling itsdangerous-0.24:
+     Successfully uninstalled itsdangerous-0.24
+   Uninstalling Jinja2-2.10:
+     Successfully uninstalled Jinja2-2.10
+   Uninstalling MarkupSafe-1.0:
+     Successfully uninstalled MarkupSafe-1.0
+   Uninstalling SQLAlchemy-1.1.15:
+     Successfully uninstalled SQLAlchemy-1.1.15
+   Uninstalling Werkzeug-0.13:
+     Successfully uninstalled Werkzeug-0.13
 
-     <<install python>>
+   Environment now purged and fresh!
+   Installing flask…
+   Collecting flask
+     Using cached Flask-0.12.2-py2.py3-none-any.whl
+   Collecting Jinja2>=2.4 (from flask)
+     Using cached Jinja2-2.10-py2.py3-none-any.whl
+   Collecting Werkzeug>=0.7 (from flask)
+     Using cached Werkzeug-0.13-py2.py3-none-any.whl
+   Collecting click>=2.0 (from flask)
+     Using cached click-6.7-py2.py3-none-any.whl
+   Collecting itsdangerous>=0.21 (from flask)
+   Collecting MarkupSafe>=0.23 (from Jinja2>=2.4->flask)
+   Installing collected packages: MarkupSafe, Jinja2, Werkzeug, click, itsdangerous, flask
+   Successfully installed Jinja2-2.10 MarkupSafe-1.0 Werkzeug-0.13 click-6.7 flask-0.12.2 itsdangerous-0.24
+
+   Adding flask to Pipfile's [packages]…
+   Installing sqlalchemy…
+   Collecting sqlalchemy
+   Installing collected packages: sqlalchemy
+   Successfully installed sqlalchemy-1.1.15
+
+   Adding sqlalchemy to Pipfile's [packages]…
+#+end_example
+
+** Flask Backend
+   The backend will be in Flask. I've only been exposed to that and Django, and
+   Flask fits this use-case much better.
+
+   #+NAME: flask preamble
+   #+BEGIN_SRC python
+     from flask import Flask
+     app = Flask(__name__)
    #+END_SRC
 
-** =requirements.txt=
-   Next, we need to install our server-side dependencies with a pip requirements file.
-   #+BEGIN_SRC python :tangle ./requirements.txt
-     sqlalchemy
-     flask
+   #+BEGIN_SRC python :export none :noweb yes :tangle server.py
+     <<flask preamble>>
    #+END_SRC
-   
-   #+NAME: install python
-   #+BEGIN_SRC dockerfile
-     COPY requirements.txt .
-     RUN pip3 install -r requirements.txt
-   #+END_SRC
+*** The POST endpoint
+    The first endpoint that I think of is "creating a new feature request"
+    that's mentioned at the top of the project. The description includes a list
+    of key/value pairs that can be modeled as JSON.
 
-** KnockoutJS CDN link
+** KnockoutJS Frontend
    I'm going to use one of the CDN copies of KO like they suggest on their
    website.
-   #+NAME: KO CDN
+   #+NAME: KO CDN script
    #+BEGIN_SRC html 
      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.2/knockout-min.js"></script>
    #+END_SRC
